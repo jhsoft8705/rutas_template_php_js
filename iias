@@ -3,11 +3,26 @@
     <system.webServer>
         <rewrite>
             <rules>
+                <!-- Excluir la carpeta API explícitamente -->
+                <rule name="Exclude API folder" stopProcessing="true">
+                    <match url="^api/(.*)$" />
+                    <action type="None" />
+                </rule>
+                
+                <!-- Bloquear acceso directo a la carpeta web/ -->
+                <rule name="Block Web Directory" stopProcessing="true">
+                    <match url="^web/.*" />
+                    <action type="CustomResponse" statusCode="403" statusReason="Forbidden" />
+                </rule>
+                
+                <!-- Router principal - solo para URLs que NO sean de API -->
                 <rule name="Router" stopProcessing="true">
                     <match url="^(.*)$" />
                     <conditions>
                         <add input="{REQUEST_FILENAME}" matchType="IsFile" negate="true" />
                         <add input="{REQUEST_FILENAME}" matchType="IsDirectory" negate="true" />
+                        <!-- Condición adicional: excluir rutas que empiecen con 'api/' -->
+                        <add input="{REQUEST_URI}" pattern="^/api/" negate="true" />
                     </conditions>
                     <action type="Rewrite" url="web/router.php?url={R:1}" appendQueryString="true" />
                 </rule>
